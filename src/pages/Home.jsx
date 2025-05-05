@@ -1,42 +1,13 @@
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { motion, AnimatePresence } from 'framer-motion';
-import { toast } from 'react-toastify';
-import getIcon from '../utils/iconUtils';
-import MainFeature from '../components/MainFeature';
-
-// Mock property data
-export const MOCK_PROPERTIES = [
-  {
-    id: 1,
-    title: "Modern Downtown Apartment",
-    description: "Luxurious 2-bedroom apartment with skyline views, modern amenities, and prime downtown location.",
-    price: 425000,
-    type: "apartment",
-    listingType: "sale",
-    bedrooms: 2,
-    bathrooms: 2,
-    area: 1250,
-    address: "123 Main St, Downtown, CA 91234",
-    image: "https://images.unsplash.com/photo-1512917774080-9991f1c4c750?q=80&w=600&auto=format&fit=crop",
-    featured: true
-  },
-  {
-    id: 2,
-    title: "Spacious Family Home",
-    description: "Beautiful 4-bedroom house with large backyard, updated kitchen, and excellent school district.",
-    price: 725000,
-    type: "house",
-    listingType: "sale",
-    bedrooms: 4,
-    bathrooms: 3,
-    area: 2400,
-    address: "456 Oak Ave, Pineville, CA 91235",
-    image: "https://images.unsplash.com/photo-1600585154340-be6161a56a0c?q=80&w=600&auto=format&fit=crop",
-    featured: true
-  },
-  {
-    id: 3,
+            <button
+              onClick={resetFilters}
+              className="btn btn-outline mt-4"
+            >
+              Reset Filters
+            </button>
+                          {favoritesIds.includes(property.id) ? (
+                            <HeartIcon className="w-5 h-5 text-surface-500 group-hover:text-red-500 transition-colors" />
     title: "Cozy Studio for Rent",
     description: "Newly renovated studio apartment near university. All utilities included, perfect for students.",
     price: 1800,

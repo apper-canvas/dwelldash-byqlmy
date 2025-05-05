@@ -1,40 +1,89 @@
 import { useState, useEffect } from 'react';
+import { useSelector } from 'react-redux';
 import { motion, AnimatePresence } from 'framer-motion';
-import { toast } from 'react-toastify';
-import getIcon from '../utils/iconUtils';
-
-function MainFeature() {
+                {isAuthenticated && recentSearches.length > 0 && (
+        });
+      } catch (error) {
+        console.error("Error submitting property listing:", error);
+        toast.error("Error submitting listing. Please try again.");
+        setIsSubmitting(false);
+      }
+  
+  // Get searches from Redux store
+  const { searches: recentSearches, loading: searchesLoading } = useSelector(state => state.searches);
+  const { isAuthenticated } = useSelector(state => state.user);
   const [activeTab, setActiveTab] = useState('search');
-  const [searchParams, setSearchParams] = useState({
+      try {
+        setIsSubmitting(true);
     location: '',
-    propertyType: '',
-    minPrice: '',
-    maxPrice: '',
+  const clearRecentSearches = async () => {
+    try {
+      // In a real implementation, this would delete searches from the database
+      // For simplicity, we'll just clear them from the Redux store
+      await Promise.all(recentSearches.map(search => 
+        SearchService.deleteSearch(search.id)
+      ));
+      toast.info("Recent searches cleared");
+    } catch (error) {
+      console.error("Error clearing recent searches:", error);
+      toast.error("Error clearing searches. Please try again.");
+    }
     bedrooms: '',
-    bathrooms: ''
-  });
+        // Fetch properties matching the search criteria
+        await PropertyService.fetchProperties({
+          location: searchParams.location,
+          type: searchParams.propertyType,
+          minPrice: searchParams.minPrice,
+          maxPrice: searchParams.maxPrice,
+          bedrooms: searchParams.bedrooms,
+          bathrooms: searchParams.bathrooms
+        });
+        
+        toast.success(`Search completed for "${searchParams.location}"`);
+      } catch (error) {
+        console.error("Error performing search:", error);
+        toast.error("Error performing search. Please try again.");
+      } finally {
+        setIsSubmitting(false);
   const [listingData, setListingData] = useState({
-    title: '',
-    description: '',
-    propertyType: '',
-    listingType: 'sale',
-    price: '',
-    address: '',
     bedrooms: '',
     bathrooms: '',
     area: '',
     images: []
   });
-  const [formErrors, setFormErrors] = useState({});
+  const handleSubmitListing = async (e) => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [recentSearches, setRecentSearches] = useState(() => {
     const saved = localStorage.getItem('recentSearches');
     return saved ? JSON.parse(saved) : [];
-  });
+      try {
+        setIsSubmitting(true);
 
-  // Icon components
-  const SearchIcon = getIcon('Search');
+        if (!isAuthenticated) {
+          toast.error("You must be logged in to list a property");
+          return;
+        }
+        
+        // Submit property listing
+        const propertyData = {
+          Name: listingData.title,
+          title: listingData.title,
+          description: listingData.description,
+          property_type: listingData.propertyType,
+          listing_type: listingData.listingType,
+          price: parseFloat(listingData.price),
+          address: listingData.address,
+          bedrooms: listingData.bedrooms ? parseInt(listingData.bedrooms) : 0,
+          bathrooms: listingData.bathrooms ? parseFloat(listingData.bathrooms) : 0,
+          area: listingData.area ? parseInt(listingData.area) : 0,
+          // In a real implementation, you would handle image uploads here
+          images: []
+        };
+        
+        await PropertyService.createProperty(propertyData);
   const HomeIcon = getIcon('Home');
+        
+        // Reset form
   const PlusIcon = getIcon('Plus');
   const MapPinIcon = getIcon('MapPin');
   const BedIcon = getIcon('Bed');

@@ -1,12 +1,102 @@
-import { useState, useEffect } from 'react';
-import { Routes, Route, Link, useLocation } from 'react-router-dom';
-import { ToastContainer } from 'react-toastify';
+import { useState, useEffect, createContext } from 'react';
+import { Routes, Route, Link, useLocation, useNavigate } from 'react-router-dom';
+  // Get authentication status with proper error handling
+  const userState = useSelector((state) => state.user);
+  const isAuthenticated = userState?.isAuthenticated || false;
+  // Initialize ApperUI once when the app loads
+  useEffect(() => {
+    const { ApperClient, ApperUI } = window.ApperSDK;
+    const client = new ApperClient({
+      apperProjectId: import.meta.env.VITE_APPER_PROJECT_ID,
+      apperPublicKey: import.meta.env.VITE_APPER_PUBLIC_KEY
+    });
+    
+    // Initialize but don't show login yet
+    ApperUI.setup(client, {
+      target: '#authentication',
+      clientId: import.meta.env.VITE_APPER_PROJECT_ID,
+      view: 'both',
+      onSuccess: function(user) {
+        let currentPath = window.location.pathname + window.location.search;
+        if (user && user.isAuthenticated) {
+          dispatch(setUser(user));
+          navigate('/');
+        } else if (!currentPath.includes('login')) {
+          navigate(currentPath);
+        } else {
+          navigate('/login');
+        }
+      },
+      onError: function(error) {
+        console.error("Authentication failed:", error);
+      }
+    });
+    
+    setIsInitialized(true);
+  }, [dispatch, navigate]);
+  // Authentication methods to share via context
+  const authMethods = {
+    isInitialized,
+    logout: async () => {
+      try {
+        const { ApperUI } = window.ApperSDK;
+        await ApperUI.logout();
+        dispatch(clearUser());
+        navigate('/login');
+      } catch (error) {
+        console.error("Logout failed:", error);
+      }
+    }
+  };
+        {isAuthenticated && (
+          <div className="container mx-auto px-4 py-2 flex justify-end">
+            <button
+              onClick={authMethods.logout}
+              className="text-sm text-surface-600 hover:text-red-500 transition-colors"
+            >
+              Logout
+            </button>
+          </div>
+        )}
+    </AuthContext.Provider>
+
+  const navigate = useNavigate();
+  const dispatch = useDispatch();
+  const [isInitialized, setIsInitialized] = useState(false);
+    <AuthContext.Provider value={authMethods}>
 import { motion } from 'framer-motion';
+import { useDispatch, useSelector } from 'react-redux';
+      {/* Don't render routes until initialization is complete */}
+      {!isInitialized && (
+        <div className="flex justify-center items-center h-64">
+          <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-primary"></div>
+          <div className="ml-4 text-lg font-medium">
+            Initializing application...
+          </div>
+        </div>
+      )}
 import getIcon from './utils/iconUtils';
 import Home from './pages/Home';
-import PropertyDetail from './pages/PropertyDetail';
+          {/* Public routes - accessible only when NOT authenticated */}
+          <Route element={<PublicRoute />}>
+            <Route path="/login" element={<Login />} />
+            <Route path="/signup" element={<Signup />} />
+          </Route>
+
+          {/* Protected routes - require authentication */}
+          <Route element={<ProtectedRoute />}>
+            <Route path="/" element={<Home />} />
 import Wishlist from './pages/Wishlist';
 import NotFound from './pages/NotFound';
+import { setUser, clearUser } from './store/slices/userSlice';
+import ProtectedRoute from './components/ProtectedRoute';
+import PublicRoute from './components/PublicRoute';
+import Login from './pages/Login';
+import Signup from './pages/Signup';
+
+// Create auth context
+export const AuthContext = createContext(null);
+          </Route>
 
 function App() {
   const [darkMode, setDarkMode] = useState(() => {

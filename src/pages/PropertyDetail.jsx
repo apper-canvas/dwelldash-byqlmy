@@ -1,48 +1,82 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useParams, Link } from 'react-router-dom';
-import { motion } from 'framer-motion';
-import { toast } from 'react-toastify';
-import getIcon from '../utils/iconUtils';
-
-// Import mock data (in real app this would be from a central store or API)
-import { MOCK_PROPERTIES } from '../pages/Home';
-
-function PropertyDetail() {
-  const { id } = useParams();
-  const [property, setProperty] = useState(null);
-  const [loading, setLoading] = useState(true);
-  const [relatedProperties, setRelatedProperties] = useState([]);
-  const [favorites, setFavorites] = useState(() => {
-    const saved = localStorage.getItem('favorites');
-    return saved ? JSON.parse(saved) : [];
-  });
-
-  // Icon components
-  const HeartIcon = getIcon('Heart');
-  const HeartFilledIcon = getIcon('HeartFilled');
-  const BedIcon = getIcon('Bed');
-  const BathIcon = getIcon('Bath');
-  const SquareIcon = getIcon('Square');
-  const HomeIcon = getIcon('Home');
-  const TagIcon = getIcon('Tag');
-  const MapPinIcon = getIcon('MapPin');
-  const CalendarIcon = getIcon('Calendar');
+                      <HeartFilledIcon className="w-5 h-5 text-red-500" />
+                      <HeartIcon className="w-5 h-5 text-surface-500 group-hover:text-red-500 transition-colors" />
+                  name="name"
+    // Fetch property details and favorites
+    const fetchData = async () => {
+      try {
+        setLoading(true);
+        const propertyData = await PropertyService.fetchPropertyById(parseInt(id));
+        await FavoriteService.fetchFavorites();
+        
+        // Fetch related properties (properties of same type)
+        if (propertyData) {
+          const allProperties = await PropertyService.fetchProperties({
+            type: propertyData.type
+          });
+          
+          // Filter out the current property and limit to 3
+          const related = allProperties
+            .filter(p => p.id !== propertyData.id)
+            .slice(0, 3);
+            
+          setRelatedProperties(related);
+        }
+        
+        setLoading(false);
+      } catch (error) {
+        console.error("Error loading property details:", error);
+        setLoading(false);
+    };
+    
+    fetchData();
+    
+    // Cleanup
+    return () => {
+      dispatch(clearPropertyDetail());
+    };
+  }, [id, dispatch]);
+                  name="email"
+                  name="phone"
+  const toggleFavorite = async (propertyId) => {
+    try {
+      const favorite = favorites.find(fav => fav.propertyId === propertyId);
+      if (favorite) {
+        await FavoriteService.removeFromFavorites(favorite.id);
+        toast.info("Removed from favorites");
+      } else {
+        await FavoriteService.addToFavorites(propertyId);
+        toast.success("Added to favorites");
+      }
+      await FavoriteService.fetchFavorites();
   const CheckIcon = getIcon('Check');
-  const ArrowLeftIcon = getIcon('ArrowLeft');
-  const SendIcon = getIcon('Send');
-
   useEffect(() => {
     // Simulate API call to fetch property details
     setTimeout(() => {
       const propertyData = MOCK_PROPERTIES.find(p => p.id === parseInt(id));
+                  name="message"
       setProperty(propertyData);
 
       // Find related properties (same type or in same price range)
       if (propertyData) {
         const related = MOCK_PROPERTIES.filter(p => 
-          p.id !== propertyData.id && 
-          (p.type === propertyData.type || 
-           Math.abs(p.price - propertyData.price) < propertyData.price * 0.3)
+              <button 
+                type="submit" 
+                className="btn btn-primary w-full flex items-center justify-center"
+                disabled={contactLoading}
+              >
+                {contactLoading ? (
+                  <>
+                    <div className="animate-spin h-5 w-5 border-2 border-white border-t-transparent rounded-full mr-2"></div>
+                    Sending...
+                  </>
+                ) : (
+                  <>
+                    <SendIcon className="w-4 h-4 mr-2" />
+                    Send Message
+                  </>
+                )}
         ).slice(0, 3);
         setRelatedProperties(related);
       }

@@ -1,53 +1,56 @@
 import { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
-import { motion, AnimatePresence } from 'framer-motion';
-import { toast } from 'react-toastify';
-import getIcon from '../utils/iconUtils';
-import { MOCK_PROPERTIES } from './Home';
-
+                      <h3 className="font-bold text-xl truncate">{favorite.property.title}</h3>
+                        src={favorite.property.image} 
+                        alt={favorite.property.title} 
+                  key={favorite.id}
+                  initial={{ opacity: 0, y: 20 }}
+                      <span className="truncate">{favorite.property.address}</span>
 function Wishlist() {
-  const [favorites, setFavorites] = useState(() => {
-    const saved = localStorage.getItem('favorites');
-    return saved ? JSON.parse(saved) : [];
-  });
-  
-  const [favoriteProperties, setFavoriteProperties] = useState([]);
-  const [loading, setLoading] = useState(true);
+                      onClick={() => removeFromWishlist(favorite.id)}
+                      {favorite.property.bedrooms > 0 && (
+                          <span>{favorite.property.bedrooms} {favorite.property.bedrooms === 1 ? 'Bed' : 'Beds'}</span>
+  const dispatch = useDispatch();
+  const { favorites, loading } = useSelector(state => state.favorites);
 
-  // Icon components
+                    <div className="absolute top-3 left-3 z-10">
   const HeartIcon = getIcon('Heart');
   const HeartFilledIcon = getIcon('HeartFilled');
-  const BedIcon = getIcon('Bed');
+                        <span>{favorite.property.bathrooms} {favorite.property.bathrooms === 1 ? 'Bath' : 'Baths'}</span>
   const BathIcon = getIcon('Bath');
   const SquareIcon = getIcon('Square');
   const MapPinIcon = getIcon('MapPin');
   const TrashIcon = getIcon('Trash');
-  const ArrowLeftIcon = getIcon('ArrowLeft');
+                        <span>{favorite.property.area} sq ft</span>
 
+                        {formatPrice(favorite.property.price, favorite.property.listingType)}
+                        to={`/property/${favorite.property.id}`}
   useEffect(() => {
-    // Load favorite properties
-    setLoading(true);
-    setTimeout(() => {
-      const properties = MOCK_PROPERTIES.filter(property => 
-        favorites.includes(property.id)
-      );
-      setFavoriteProperties(properties);
-      setLoading(false);
-    }, 500);
+    // Fetch favorites when component mounts
+    FavoriteService.fetchFavorites();
   }, [favorites]);
 
-  useEffect(() => {
-    localStorage.setItem('favorites', JSON.stringify(favorites));
-  }, [favorites]);
-
-  const removeFromWishlist = (id) => {
-    setFavorites(favorites.filter(favId => favId !== id));
-    toast.info("Removed from wishlist");
+  const removeFromWishlist = async (favoriteId) => {
+    try {
+      await FavoriteService.removeFromFavorites(favoriteId);
+      toast.info("Removed from wishlist");
+    } catch (error) {
+      console.error("Error removing from wishlist:", error);
+      toast.error("Failed to remove from wishlist");
+    }
   };
 
-  const clearWishlist = () => {
-    setFavorites([]);
-    toast.info("Wishlist cleared");
+  const clearWishlist = async () => {
+    try {
+      // Remove all favorites one by one
+      const promises = favorites.map(favorite => 
+        FavoriteService.removeFromFavorites(favorite.id)
+      );
+      await Promise.all(promises);
+      toast.info("Wishlist cleared");
+    } catch (error) {
+      console.error("Error clearing wishlist:", error);
+      toast.error("Failed to clear wishlist");
+    }
   };
 
   const formatPrice = (price, listingType) => {
