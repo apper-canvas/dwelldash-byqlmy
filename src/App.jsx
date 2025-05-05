@@ -4,6 +4,7 @@ import { ToastContainer } from 'react-toastify';
 import { motion } from 'framer-motion';
 import getIcon from './utils/iconUtils';
 import Home from './pages/Home';
+import PropertyDetail from './pages/PropertyDetail';
 import NotFound from './pages/NotFound';
 
 function App() {
@@ -60,6 +61,7 @@ function App() {
       <main className="container mx-auto px-4 py-6">
         <Routes>
           <Route path="/" element={<Home />} />
+          <Route path="/property/:id" element={<PropertyDetail />} />
           <Route path="*" element={<NotFound />} />
         </Routes>
       </main>

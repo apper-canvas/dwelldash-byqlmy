@@ -1,11 +1,12 @@
 import { useState, useEffect } from 'react';
+import { Link } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { toast } from 'react-toastify';
 import getIcon from '../utils/iconUtils';
 import MainFeature from '../components/MainFeature';
 
 // Mock property data
-const MOCK_PROPERTIES = [
+export const MOCK_PROPERTIES = [
   {
     id: 1,
     title: "Modern Downtown Apartment",
@@ -395,9 +396,12 @@ function Home() {
                             {formatPrice(property.price, property.listingType)}
                           </div>
                           
-                          <button className="btn btn-primary">
+                          <Link 
+                            to={`/property/${property.id}`}
+                            className="btn btn-primary"
+                          >
                             View Details
-                          </button>
+                          </Link>
                         </div>
                       </div>
                     </motion.div>
